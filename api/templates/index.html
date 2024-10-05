@@ -269,9 +269,30 @@
         ".git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/";
 
       function handleFileSelect(event) {
+        const ignoreSuffixes = document
+          .getElementById("ignore-suffixes")
+          .value.split(",")
+          .map((s) => s.trim().toLowerCase());
+        const ignoreFolders = document
+          .getElementById("ignore-folders")
+          .value.split(",")
+          .map((s) => s.trim().toLowerCase());
+
         selectedFiles = Array.from(event.target.files).filter((file) => {
           const lowerPath = file.webkitRelativePath.toLowerCase();
-          return !lowerPath.includes("/.git/") && !lowerPath.endsWith(".git");
+          const fileName = file.name.toLowerCase();
+
+          // Check if the file is in any ignored folder
+          if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
+            return false;
+          }
+
+          // Check if the file has any ignored suffix
+          if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
+            return false;
+          }
+
+          return true;
         });
         displaySelectedFiles();
       }
