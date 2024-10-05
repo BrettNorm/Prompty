@@ -47,9 +47,12 @@
         border: none;
       }
       .form-control,
-      .form-select {
+      .form-select,
+      .form-control:focus,
+      .form-select:focus {
         border-radius: 0.5rem;
         border: 1px solid #ced4da;
+        box-shadow: none;
       }
       #output,
       #content {
@@ -98,6 +101,12 @@
       }
       .btn-danger:hover {
         background-color: rgba(220, 53, 69, 0.1);
+      }
+      /* Ensure textareas wrap text */
+      textarea {
+        resize: vertical;
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
     </style>
   </head>
@@ -160,6 +169,59 @@
                 </div>
               </div>
             </div>
+            <!-- Ignore Lists Textareas with Individual Reset Buttons -->
+            <div class="row g-3 mt-3">
+              <div class="col-md-6">
+                <label for="ignore-suffixes" class="form-label"
+                  >Ignore File Suffixes (comma-separated):</label
+                >
+                <div class="input-group">
+                  <textarea
+                    class="form-control"
+                    id="ignore-suffixes"
+                    name="ignore_suffixes"
+                    rows="4"
+                  >
+.env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class</textarea
+                  >
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="resetIgnoreSuffixes()"
+                    title="Reset to Default"
+                  >
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="ignore-folders" class="form-label"
+                  >Ignore Folders (comma-separated):</label
+                >
+                <div class="input-group">
+                  <textarea
+                    class="form-control"
+                    id="ignore-folders"
+                    name="ignore_folders"
+                    rows="4"
+                  >
+.git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/</textarea
+                  >
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="resetIgnoreFolders()"
+                    title="Reset to Default"
+                  >
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- Size Limit Note -->
+            <div class="alert alert-info mt-3" role="alert">
+              Note: Files over 500KB are automatically ignored.
+            </div>
             <!-- Selected files list -->
             <ul id="file-list" class="list-group mt-3"></ul>
             <!-- Process Folder Button -->
@@ -184,7 +246,16 @@
           <hr />
           <h4>Output Messages:</h4>
           <div id="output" class="mb-3"></div>
-          <h4>File Contents:</h4>
+          <h4 class="d-flex justify-content-between align-items-center mt-4">
+            <span>File Contents:</span>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              onclick="copyFileContents()"
+            >
+              <i class="bi bi-clipboard"></i> Copy to Clipboard
+            </button>
+          </h4>
           <div id="content"></div>
         </div>
       </div>
@@ -192,9 +263,16 @@
 
     <script>
       var selectedFiles = [];
+      const defaultIgnoreSuffixes =
+        ".env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class";
+      const defaultIgnoreFolders =
+        ".git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/";
 
       function handleFileSelect(event) {
-        selectedFiles = Array.from(event.target.files);
+        selectedFiles = Array.from(event.target.files).filter((file) => {
+          const lowerPath = file.webkitRelativePath.toLowerCase();
+          return !lowerPath.includes("/.git/") && !lowerPath.endsWith(".git");
+        });
         displaySelectedFiles();
       }
 
@@ -243,6 +321,15 @@
         $("#token-count").text("0");
       }
 
+      function resetIgnoreSuffixes() {
+        document.getElementById("ignore-suffixes").value =
+          defaultIgnoreSuffixes;
+      }
+
+      function resetIgnoreFolders() {
+        document.getElementById("ignore-folders").value = defaultIgnoreFolders;
+      }
+
       $(document).ready(function () {
         $("#upload-form").on("submit", function (event) {
           event.preventDefault();
@@ -252,8 +339,9 @@
           }
           var formData = new FormData();
           formData.append("model", $("#model-select").val());
+          formData.append("ignore_suffixes", $("#ignore-suffixes").val());
+          formData.append("ignore_folders", $("#ignore-folders").val());
 
-          // Append files from selectedFiles array
           selectedFiles.forEach(function (file) {
             formData.append(
               "files",
@@ -290,6 +378,18 @@
           });
         });
       });
+
+      function copyFileContents() {
+        var content = document.getElementById("content").innerText;
+        navigator.clipboard.writeText(content).then(
+          function () {
+            alert("File contents copied to clipboard!");
+          },
+          function (err) {
+            alert("Failed to copy text: " + err);
+          }
+        );
+      }
     </script>
   </body>
 </html>
