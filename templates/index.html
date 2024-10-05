@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Folder Processor Web App</title>
+    <!-- Bootstrap CSS via CDN -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Optional JavaScript and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+      #output,
+      #content {
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border: 1px solid #ced4da;
+        height: 300px;
+        overflow-y: scroll;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h1>Folder Processor Web App</h1>
+      <form id="upload-form" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="model-select">Select AI Model:</label>
+          <select class="form-control" id="model-select" name="model">
+            <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            <option value="gpt-4">gpt-4</option>
+            <option value="text-davinci-003">text-davinci-003</option>
+            <option value="text-curie-001">text-curie-001</option>
+            <option value="code-davinci-002">code-davinci-002</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="folder-input">Select Folder:</label>
+          <!-- Use webkitdirectory attribute -->
+          <input
+            type="file"
+            class="form-control-file"
+            id="folder-input"
+            name="files"
+            webkitdirectory
+            directory
+            multiple
+            required
+          />
+          <small class="form-text text-muted">
+            Note: Folder selection is supported in Chrome, Edge, and Opera
+            browsers.
+          </small>
+        </div>
+        <button type="submit" class="btn btn-primary">Process Folder</button>
+      </form>
+      <hr />
+      <h3>Estimated Token Count: <span id="token-count">0</span></h3>
+      <h3>Output Messages:</h3>
+      <div id="output"></div>
+      <h3>File Contents:</h3>
+      <div id="content"></div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        $("#upload-form").on("submit", function (event) {
+          event.preventDefault();
+          var formData = new FormData(this);
+          $("#output").text("Processing...");
+          $("#content").text("");
+          $("#token-count").text("0");
+
+          $.ajax({
+            url: "/",
+            type: "POST",
+            data: formData,
+            success: function (data) {
+              $("#output").text(data.output_messages);
+              $("#content").text(data.file_contents);
+              $("#token-count").text(data.token_count);
+            },
+            error: function () {
+              $("#output").text("An error occurred during processing.");
+            },
+            cache: false,
+            contentType: false,
+            processData: false,
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
