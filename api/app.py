@@ -32,7 +32,7 @@ def process_files(uploaded_files, model_name):
         encoding = tiktoken.get_encoding('cl100k_base')
     
     for file in uploaded_files:
-        filename = secure_filename(file.filename)
+        filename = file.filename  # Use file.filename directly
         # Check file extension
         if filename.lower().endswith((
             '.py', '.js', '.jsx', '.ts', '.tsx', '.html', '.htm', '.css', '.scss',
