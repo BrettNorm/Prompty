@@ -122,8 +122,6 @@ Prompty can process a wide range of text-based file types, including but not lim
 - Markdown (.md, .markdown)
 - reStructuredText (.rst)
 - AsciiDoc (.adoc, .asciidoc)
-- Office Open XML (.docx, .xlsx, .pptx) - text content only
-- OpenDocument (.odt, .ods, .odp) - text content only
 
 ### Log Files
 
