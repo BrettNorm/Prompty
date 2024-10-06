@@ -123,6 +123,16 @@
       .file-size {
         justify-self: end;
       }
+      /* Styles for Drag-and-Drop Area */
+      #drop-zone {
+        border: 2px dashed #ced4da;
+        background-color: #f8f9fa;
+        cursor: pointer;
+      }
+
+      #drop-zone.dragover {
+        background-color: #e2e6ea;
+      }
     </style>
   </head>
   <body>
@@ -238,10 +248,23 @@
                 </div>
               </div>
             </div>
+
             <!-- Size Limit Note -->
             <div class="alert alert-info mt-3" role="alert">
               Note: Files over 500KB are automatically ignored.
             </div>
+
+            <!-- Drag-and-Drop Area -->
+            <div
+              id="drop-zone"
+              class="border border-dashed rounded p-4 text-center mt-3"
+            >
+              <p class="mb-0">Drag and drop files or folders here</p>
+              <p class="text-muted">
+                (or continue using the file selector above)
+              </p>
+            </div>
+
             <!-- Selected files list -->
             <ul id="file-list" class="list-group mt-3"></ul>
             <!-- Process Folder Button -->
@@ -309,7 +332,7 @@
           .value.split(",")
           .map((s) => s.trim().toLowerCase());
 
-        selectedFiles = Array.from(event.target.files).filter((file) => {
+        const newFiles = Array.from(event.target.files).filter((file) => {
           const lowerPath = file.webkitRelativePath.toLowerCase();
           const fileName = file.name.toLowerCase();
 
@@ -325,8 +348,97 @@
 
           return true;
         });
+
+        selectedFiles = selectedFiles.concat(newFiles);
         displaySelectedFiles();
       }
+      // Drag-and-Drop Functionality
+      var dropZone = document.getElementById("drop-zone");
+
+      dropZone.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add("dragover");
+      });
+
+      dropZone.addEventListener("dragleave", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove("dragover");
+      });
+
+      dropZone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove("dragover");
+
+        var items = e.dataTransfer.items;
+        if (items) {
+          handleDroppedItems(items);
+        }
+      });
+
+      function handleDroppedItems(items) {
+        const entryPromises = [];
+
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i].webkitGetAsEntry();
+          if (item) {
+            entryPromises.push(traverseFileTree(item));
+          }
+        }
+
+        Promise.all(entryPromises).then(() => {
+          displaySelectedFiles();
+        });
+      }
+      function traverseFileTree(item, path = "") {
+        return new Promise((resolve) => {
+          if (item.isFile) {
+            item.file((file) => {
+              file.fullPath = path + file.name;
+              const ignoreSuffixes = document
+                .getElementById("ignore-suffixes")
+                .value.split(",")
+                .map((s) => s.trim().toLowerCase());
+              const ignoreFolders = document
+                .getElementById("ignore-folders")
+                .value.split(",")
+                .map((s) => s.trim().toLowerCase());
+
+              const fileName = file.name.toLowerCase();
+              const lowerPath = file.fullPath.toLowerCase();
+
+              // Check if the file is in any ignored folder
+              if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
+                resolve();
+                return;
+              }
+
+              // Check if the file has any ignored suffix
+              if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
+                resolve();
+                return;
+              }
+
+              selectedFiles.push(file);
+              resolve();
+            });
+          } else if (item.isDirectory) {
+            const dirReader = item.createReader();
+            dirReader.readEntries((entries) => {
+              const promises = [];
+              for (let i = 0; i < entries.length; i++) {
+                promises.push(
+                  traverseFileTree(entries[i], path + item.name + "/")
+                );
+              }
+              Promise.all(promises).then(resolve);
+            });
+          }
+        });
+      }
+
       function getFileIcon(fileName) {
         const extension = fileName.split(".").pop().toLowerCase();
         const iconMap = {
@@ -358,14 +470,19 @@
           const li = document.createElement("li");
           li.className = "list-group-item file-item";
 
+          const filePath =
+            file.fullPath || file.webkitRelativePath || file.name;
+
           li.innerHTML = `
-      <span class="bi ${getFileIcon(file.name)}"></span>
-      <span class="file-name">${file.webkitRelativePath || file.name}</span>
-      <span class="file-size text-muted">${formatFileSize(file.size)}</span>
-      <button class="btn btn-sm btn-danger" onclick="removeFile(${index})">
-        <i class="bi bi-x-lg"></i>
-      </button>
-    `;
+            <span class="bi ${getFileIcon(file.name)}"></span>
+            <span class="file-name">${filePath}</span>
+            <span class="file-size text-muted">${formatFileSize(
+              file.size
+            )}</span>
+            <button class="btn btn-sm btn-danger" onclick="removeFile(${index})">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          `;
 
           fileList.appendChild(li);
         });
@@ -410,7 +527,7 @@
             formData.append(
               "files",
               file,
-              file.webkitRelativePath || file.name
+              file.fullPath || file.webkitRelativePath || file.name
             );
           });
 
