@@ -23,6 +23,7 @@ Visit Prompty here: [https://prompty-flax.vercel.app/](https://prompty-flax.verc
 5. Upload and process your files
 6. View the estimated token count and aggregated file contents
 7. Copy the pooled content and paste it into your preferred AI tool for context-rich prompting
+8. AND/OR download the combined file contents by clicking the "Download Combined File" button
 
 Prompty is ideal for:
 

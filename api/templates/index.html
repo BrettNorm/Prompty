@@ -266,15 +266,26 @@
           <hr />
           <h4>Output Messages:</h4>
           <div id="output" class="mb-3"></div>
+          <!-- Modified File Contents Header with Download Button -->
           <h4 class="d-flex justify-content-between align-items-center mt-4">
             <span>File Contents:</span>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              onclick="copyFileContents()"
-            >
-              <i class="bi bi-clipboard"></i> Copy to Clipboard
-            </button>
+            <div>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm"
+                onclick="copyFileContents()"
+              >
+                <i class="bi bi-clipboard"></i> Copy to Clipboard
+              </button>
+              <!-- New Download Button -->
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm ms-2"
+                onclick="downloadFileContents()"
+              >
+                <i class="bi bi-download"></i> Download Combined File
+              </button>
+            </div>
           </h4>
           <div id="content"></div>
         </div>
@@ -431,6 +442,23 @@
           });
         });
       });
+
+      function downloadFileContents() {
+        var content = document.getElementById("content").innerText;
+        var blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "combined_files.txt";
+
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
 
       function copyFileContents() {
         var content = document.getElementById("content").innerText;
