@@ -108,6 +108,21 @@
         white-space: pre-wrap;
         word-wrap: break-word;
       }
+      .file-item {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        gap: 10px;
+        padding: 5px;
+      }
+      .file-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .file-size {
+        justify-self: end;
+      }
     </style>
   </head>
   <body>
@@ -187,7 +202,7 @@
                     name="ignore_suffixes"
                     rows="4"
                   >
-.env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class</textarea
+                    .env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class</textarea
                   >
                   <button
                     type="button"
@@ -210,7 +225,7 @@
                     name="ignore_folders"
                     rows="4"
                   >
-.git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/</textarea
+                    .git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/</textarea
                   >
                   <button
                     type="button"
@@ -301,34 +316,46 @@
         });
         displaySelectedFiles();
       }
+      function getFileIcon(fileName) {
+        const extension = fileName.split(".").pop().toLowerCase();
+        const iconMap = {
+          py: "bi-filetype-py",
+          js: "bi-filetype-js",
+          html: "bi-filetype-html",
+          css: "bi-filetype-css",
+          json: "bi-filetype-json",
+          md: "bi-filetype-md",
+          // Add more file types as needed
+          default: "bi-file-earmark",
+        };
+        return iconMap[extension] || iconMap["default"];
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
 
       function displaySelectedFiles() {
-        var fileList = document.getElementById("file-list");
+        const fileList = document.getElementById("file-list");
         fileList.innerHTML = "";
 
-        selectedFiles.forEach(function (file, index) {
-          var li = document.createElement("li");
-          li.className = "list-group-item";
+        selectedFiles.forEach((file, index) => {
+          const li = document.createElement("li");
+          li.className = "list-group-item file-item";
 
-          var containerDiv = document.createElement("div");
-          containerDiv.className =
-            "d-flex justify-content-between align-items-center";
+          li.innerHTML = `
+      <span class="bi ${getFileIcon(file.name)}"></span>
+      <span class="file-name">${file.webkitRelativePath || file.name}</span>
+      <span class="file-size text-muted">${formatFileSize(file.size)}</span>
+      <button class="btn btn-sm btn-danger" onclick="removeFile(${index})">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    `;
 
-          var fileNameSpan = document.createElement("span");
-          fileNameSpan.textContent = file.webkitRelativePath || file.name;
-          fileNameSpan.style.flexGrow = "1";
-          fileNameSpan.style.wordBreak = "break-all";
-
-          var removeButton = document.createElement("button");
-          removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
-          removeButton.className = "btn btn-sm btn-danger";
-          removeButton.onclick = function () {
-            removeFile(index);
-          };
-
-          containerDiv.appendChild(fileNameSpan);
-          containerDiv.appendChild(removeButton);
-          li.appendChild(containerDiv);
           fileList.appendChild(li);
         });
       }
