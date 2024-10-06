@@ -126,7 +126,7 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
         except Exception as e:
             output_messages.append(f"Error reading {filename}: {e}\n")
 
-    output_messages.append("Finished processing files.\nNote: Files over 500KB are ignored.\n")
+    output_messages.append("Finished processing files.\n")
     combined_text = ''.join(total_content)
     token_count = len(encoding.encode(combined_text))
 
