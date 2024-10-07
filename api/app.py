@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 import tiktoken
 import os
+import docx  # Import the python-docx library
 
 app = Flask(__name__)
 
@@ -33,7 +34,10 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
 
     # Comprehensive list of supported file extensions
     supported_extensions = {
-        # Programming and Markup Languages
+        # Existing extensions...
+        '.docx',  # Add .docx support
+
+        # (Rest of the supported extensions)
         '.py', '.pyw', '.pyx', '.pxd', '.pxi',  # Python
         '.js', '.jsx', '.mjs', '.cjs',  # JavaScript
         '.ts', '.tsx',  # TypeScript
@@ -121,7 +125,13 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
 
         try:
             content_text = f"\n\n### {filename} ###\n"
-            file_data = file.read().decode('utf-8', errors='ignore')
+            if file_extension == '.docx':
+                # Handle .docx files
+                doc = docx.Document(file)
+                file_data = '\n'.join([para.text for para in doc.paragraphs])
+            else:
+                # Handle other text-based files
+                file_data = file.read().decode('utf-8', errors='ignore')
             total_content.append(content_text + file_data)
         except Exception as e:
             output_messages.append(f"Error reading {filename}: {e}\n")
@@ -135,5 +145,6 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
         'file_contents': combined_text,
         'token_count': token_count
     }
+
 if __name__ == '__main__':
     app.run(debug=True)

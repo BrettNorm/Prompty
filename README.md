@@ -87,6 +87,7 @@ Prompty can process a wide range of text-based file types, including but not lim
 - Shell scripts (.sh, .bash, .zsh, .fish)
 - PowerShell (.ps1, .psm1, .psd1)
 - SQL (.sql)
+- **Word Documents (.docx)** <!-- Added this section -->
 
 ### Web Development
 
@@ -137,7 +138,7 @@ Prompty can process a wide range of text-based file types, including but not lim
 - Batch files (.bat, .cmd) - Windows
 - Visual Basic Script (.vbs) - Windows
 
-Note: While Prompty can technically process any text-based file, it's primarily designed for code, configuration, and documentation files. Binary files and very large text files (over 500KB) are automatically ignored to ensure optimal performance. The ability to extract text from some formats (like .docx or .pdf) may be limited and only include raw text content.
+**Note**: While Prompty can technically process any text-based file, it's primarily designed for code, configuration, and documentation files. Binary files and very large text files (over 500KB) are automatically ignored to ensure optimal performance. The ability to extract text from some formats (like .docx or .pdf) may be limited and only include raw text content.
 
 ## Configuration
 
@@ -160,6 +161,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Flask](https://flask.palletsprojects.com/) for the web framework
 - [Bootstrap](https://getbootstrap.com/) for the front-end design
 - [tiktoken](https://github.com/openai/tiktoken) for token counting
+- [python-docx](https://python-docx.readthedocs.io/en/latest/) for processing Word documents <!-- Added this line -->
 
 ## Support
 

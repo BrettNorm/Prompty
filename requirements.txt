@@ -1,3 +1,4 @@
 flask
 tiktoken
 werkzeug
+python-docx
