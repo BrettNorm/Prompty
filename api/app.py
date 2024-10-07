@@ -124,7 +124,7 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
             continue
 
         try:
-            content_text = f"\n\n### {filename} ###\n"
+            content_text = f"\n\n=== FILE: {filename} ===\n"
             if file_extension == '.docx':
                 # Handle .docx files
                 doc = docx.Document(file)
