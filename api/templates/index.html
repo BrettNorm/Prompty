@@ -267,7 +267,7 @@
             </div>
             <!-- Ignore Lists Textareas with Individual Reset and Update Buttons -->
             <div class="row g-3 mt-3">
-              <!-- Ignore File Suffixes -->
+             <!-- Ignore File Suffixes -->
               <div class="col-12">
                 <label for="ignore-suffixes" class="form-label">
                   Ignore File Suffixes (comma-separated):
@@ -279,7 +279,7 @@
                     name="ignore_suffixes"
                     rows="1"
                     aria-describedby="ignoreSuffixesHelp"
-                  >.env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class</textarea>
+                  >.env, .log, .gitignore, .json, .npmrc, .prettierrc, .eslintrc, .babelrc, .pyc, .pyo, .pyd, .class</textarea>
                   <button
                     type="button"
                     class="btn btn-outline-secondary"
@@ -311,7 +311,7 @@
                     name="ignore_folders"
                     rows="1"
                     aria-describedby="ignoreFoldersHelp"
-                  >.git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/</textarea>
+                  >.git/, .svn/, .vscode/, .idea/, node_modules/, venv/, .venv/, build/, dist/, out/, .next/, coverage/</textarea>
                   <button
                     type="button"
                     class="btn btn-outline-secondary"
@@ -330,6 +330,7 @@
                   </button>
                 </div>
               </div>
+
 
 
             </div>
@@ -406,9 +407,9 @@
     <script>
       var selectedFiles = [];
       const defaultIgnoreSuffixes =
-        ".env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class";
+        ".env, .log, .gitignore, .json, .npmrc, .prettierrc, .eslintrc, .babelrc, .pyc, .pyo, .pyd, .class";
       const defaultIgnoreFolders =
-        ".git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/";
+        ".git/, .svn/, .vscode/, .idea/, node_modules/, venv/, .venv/, build/, dist/, out/, .next/, coverage/";
 
       function handleFileSelect(event) {
         const ignoreSuffixes = document
