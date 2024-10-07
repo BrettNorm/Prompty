@@ -132,7 +132,6 @@
         resize: vertical;
       }
 
-      /* Adjust height for smaller screens */
       @media (max-width: 576px) {
         #ignore-suffixes,
         #ignore-folders {
@@ -340,7 +339,7 @@
               Note: Files over 500KB are automatically ignored.
             </div>
 
-            <!-- Updated Drag-and-Drop Area with Click Functionality -->
+            <!-- Drag-and-Drop Area with Click Functionality -->
             <div
               id="drop-zone"
               class="border border-dashed rounded p-4 text-center mt-3"
@@ -354,7 +353,7 @@
 
             <!-- Selected files list -->
             <ul id="file-list" class="list-group mt-3"></ul>
-            <!-- 6. Updated Process Folder Button for Responsiveness -->
+            <!-- Process Files Button-->
             <div class="d-flex justify-content-end mt-3">
               <button type="submit" class="btn btn-primary w-100 w-md-auto">
                 <i class="bi bi-gear-fill me-1"></i> Process Folder
@@ -538,7 +537,6 @@
           json: "bi-filetype-json",
           md: "bi-filetype-md",
           docx: "bi-file-earmark-text", // Added .docx support
-          // Add more file types as needed
           default: "bi-file-earmark",
         };
         return iconMap[extension] || iconMap["default"];
@@ -700,7 +698,6 @@
       }
       function updateIgnoreSuffixes() {
         const ignoreSuffixes = document.getElementById("ignore-suffixes").value;
-        // You can add any additional processing here if needed
         alert("Ignore suffixes updated successfully!");
         // Optionally, you can trigger a re-filtering of the selected files here
         filterSelectedFiles();
@@ -708,7 +705,6 @@
 
       function updateIgnoreFolders() {
         const ignoreFolders = document.getElementById("ignore-folders").value;
-        // You can add any additional processing here if needed
         alert("Ignore folders updated successfully!");
         // Optionally, you can trigger a re-filtering of the selected files here
         filterSelectedFiles();

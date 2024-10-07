@@ -13,13 +13,15 @@ def index():
         ignore_suffixes = request.form.get('ignore_suffixes', '')
         ignore_folders = request.form.get('ignore_folders', '')
         files = request.files.getlist('files')
-        
+
         if not files or not model_name:
             return jsonify({'error': 'Missing files or model selection'}), 400
-        
-        # Process the uploaded files in-memory
+
         result = process_files(files, model_name, ignore_suffixes, ignore_folders)
-        
+
+        if 'error' in result:
+            return jsonify({'error': result['error']}), 400
+
         return jsonify(result)
     else:
         return render_template('index.html')
@@ -29,8 +31,22 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
     import re
 
     file_size_limit = 500 * 1024  # 500 KB size limit for files to process
+    MAX_TOTAL_SIZE = 10 * 1024 * 1024
     total_content = []
     output_messages = []
+
+    # Calculate the total size of all uploaded files
+    total_size = 0
+    for file in uploaded_files:
+        file.seek(0, os.SEEK_END)  # Move to the end of the file
+        size = file.tell()
+        file.seek(0)  # Reset to the beginning of the file
+        total_size += size
+
+    if total_size > MAX_TOTAL_SIZE:
+        return {
+            'error': f'Total upload size exceeds limit of {MAX_TOTAL_SIZE / (1024 * 1024)} MB.'
+        }
 
     # Comprehensive list of supported file extensions
     supported_extensions = {
@@ -147,4 +163,4 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
     }
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
