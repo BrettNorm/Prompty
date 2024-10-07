@@ -222,6 +222,14 @@
                   >
                     <i class="bi bi-arrow-counterclockwise"></i>
                   </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    onclick="updateIgnoreSuffixes()"
+                    title="Update"
+                  >
+                    <i class="bi bi-check-lg"></i> Update
+                  </button>
                 </div>
               </div>
               <div class="col-md-6">
@@ -244,6 +252,14 @@
                     title="Reset to Default"
                   >
                     <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    onclick="updateIgnoreFolders()"
+                    title="Update"
+                  >
+                    <i class="bi bi-check-lg"></i> Update
                   </button>
                 </div>
               </div>
@@ -587,6 +603,55 @@
             alert("Failed to copy text: " + err);
           }
         );
+      }
+      function updateIgnoreSuffixes() {
+        const ignoreSuffixes = document.getElementById("ignore-suffixes").value;
+        // You can add any additional processing here if needed
+        alert("Ignore suffixes updated successfully!");
+        // Optionally, you can trigger a re-filtering of the selected files here
+        filterSelectedFiles();
+      }
+
+      function updateIgnoreFolders() {
+        const ignoreFolders = document.getElementById("ignore-folders").value;
+        // You can add any additional processing here if needed
+        alert("Ignore folders updated successfully!");
+        // Optionally, you can trigger a re-filtering of the selected files here
+        filterSelectedFiles();
+      }
+
+      function filterSelectedFiles() {
+        const ignoreSuffixes = document
+          .getElementById("ignore-suffixes")
+          .value.split(",")
+          .map((s) => s.trim().toLowerCase());
+        const ignoreFolders = document
+          .getElementById("ignore-folders")
+          .value.split(",")
+          .map((s) => s.trim().toLowerCase());
+
+        selectedFiles = selectedFiles.filter((file) => {
+          const lowerPath = (
+            file.fullPath ||
+            file.webkitRelativePath ||
+            file.name
+          ).toLowerCase();
+          const fileName = file.name.toLowerCase();
+
+          // Check if the file is in any ignored folder
+          if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
+            return false;
+          }
+
+          // Check if the file has any ignored suffix
+          if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
+            return false;
+          }
+
+          return true;
+        });
+
+        displaySelectedFiles();
       }
     </script>
   </body>
