@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- 1. Added Viewport Meta Tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Prompty</title>
     <!-- Bootstrap CSS via CDN -->
     <link
@@ -33,14 +35,15 @@
       body {
         background-color: #f0f2f5;
         font-family: "Roboto", sans-serif;
+        line-height: 1.6; /* Added for better readability */
       }
       .card {
-        border-radius: 1rem;
+        border-radius: 0.75rem; /* Adjusted for mobile */
         border: none;
       }
       .card .card-body {
         background-color: #ffffff;
-        border-radius: 1rem;
+        border-radius: 0.75rem; /* Adjusted for mobile */
       }
       .input-group-text {
         background-color: #e9ecef;
@@ -83,6 +86,8 @@
       .btn-primary {
         background-color: #4a90e2;
         border-color: #4a90e2;
+        padding: 0.5rem 1rem; /* Increased padding */
+        font-size: 1rem; /* Increased font size */
       }
       .btn-primary:hover {
         background-color: #357abd;
@@ -92,6 +97,8 @@
         background-color: transparent;
         border: none;
         color: #dc3545;
+        padding: 0.5rem 1rem; /* Increased padding */
+        font-size: 1rem; /* Increased font size */
       }
       .btn-danger:hover {
         color: #a71d2a;
@@ -127,22 +134,55 @@
       #drop-zone {
         border: 2px dashed #ced4da;
         background-color: #f8f9fa;
-        cursor: pointer;
+        cursor: pointer; /* Added for clickability */
       }
 
       #drop-zone.dragover {
         background-color: #e2e6ea;
+      }
+
+      /* Responsive Enhancements */
+      @media (max-width: 576px) {
+        h1.display-4 {
+          font-size: 2rem;
+        }
+        .form-label {
+          font-size: 0.9rem;
+        }
+        .btn {
+          font-size: 0.9rem;
+        }
+        #output,
+        #content {
+          font-size: 0.9rem;
+        }
+        #output {
+          height: 150px;
+        }
+        #content {
+          height: 250px;
+        }
+        .file-item {
+          grid-template-columns: 1fr 1fr auto;
+          gap: 5px;
+        }
+        .file-name {
+          font-size: 0.9rem;
+        }
+        .file-size {
+          font-size: 0.8rem;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container mt-4">
       <h1 class="text-center mb-2 display-4">Prompty</h1>
-      <p class="text-center text-muted mb-5">
+      <p class="text-center text-muted mb-5 d-none d-md-block">
         A simple and modern web app to process your folders and estimate token
         counts.
       </p>
-      <p class="text-center mb-5">
+      <p class="text-center mb-5 d-none d-md-block">
         <a href="https://github.com/BrettNorm/Prompty" target="_blank"
           >View on GitHub for more information</a
         >
@@ -152,15 +192,20 @@
           <form id="upload-form" method="post" enctype="multipart/form-data">
             <div class="row g-3">
               <!-- AI Model Selection -->
-              <div class="col-md-6">
-                <label for="model-select" class="form-label"
-                  >Select AI Model:</label
-                >
+              <div class="col-12 col-md-6">
+                <label for="model-select" class="form-label">
+                  Select AI Model:
+                </label>
                 <div class="input-group">
-                  <span class="input-group-text"
-                    ><i class="bi bi-robot"></i
-                  ></span>
-                  <select class="form-select" id="model-select" name="model">
+                  <span class="input-group-text">
+                    <i class="bi bi-robot"></i>
+                  </span>
+                  <select
+                    class="form-select"
+                    id="model-select"
+                    name="model"
+                    aria-describedby="modelHelp"
+                  >
                     <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
                     <option value="gpt-4">gpt-4</option>
                     <option value="text-davinci-003">text-davinci-003</option>
@@ -168,16 +213,19 @@
                     <option value="code-davinci-002">code-davinci-002</option>
                   </select>
                 </div>
+                <div id="modelHelp" class="form-text">
+                  Choose the AI model for token count estimation.
+                </div>
               </div>
               <!-- Folder Selection and Start Over Button -->
-              <div class="col-md-6">
-                <label for="folder-input" class="form-label"
-                  >Select Folder:</label
-                >
+              <div class="col-12 col-md-6">
+                <label for="folder-input" class="form-label">
+                  Select Folder:
+                </label>
                 <div class="input-group">
-                  <span class="input-group-text"
-                    ><i class="bi bi-folder2-open"></i
-                  ></span>
+                  <span class="input-group-text">
+                    <i class="bi bi-folder2-open"></i>
+                  </span>
                   <input
                     type="file"
                     class="form-control"
@@ -186,6 +234,7 @@
                     webkitdirectory
                     directory
                     multiple
+                    accept=".py,.pyw,.pyx,.pxd,.pxi,.js,.jsx,.mjs,.cjs,.ts,.tsx,.html,.htm,.xhtml,.css,.scss,.sass,.less,.xml,.xsl,.xslt,.svg,.json,.jsonl,.yaml,.yml,.md,.markdown,.tex,.ltx,.r,.Rmd,.rb,.rake,.gemspec,.php,.phtml,.php3,.php4,.php5,.phps,.java,.jsp,.c,.cpp,.cxx,.h,.hpp,.cs,.go,.swift,.kt,.kts,.scala,.sc,.rs,.pl,.pm,.t,.lua,.sh,.bash,.zsh,.fish,.ps1,.psm1,.psd1,.sql,.vue,.ng.html,.hbs,.handlebars,.ejs,.pug,.ini,.toml,.properties,.env,Dockerfile,docker-compose.yml,.gitignore,.gitattributes,.editorconfig,.csv,.tsv,.txt,.rst,.adoc,.asciidoc,.log,.license,.copying,.readme,.changelog,.bat,.cmd,.vbs"
                     onchange="handleFileSelect(event)"
                   />
                   <button
@@ -202,10 +251,10 @@
             <!-- Ignore Lists Textareas with Individual Reset and Update Buttons -->
             <div class="row g-3 mt-3">
               <!-- Ignore File Suffixes -->
-              <div class="col-md-12">
-                <label for="ignore-suffixes" class="form-label"
-                  >Ignore File Suffixes (comma-separated):</label
-                >
+              <div class="col-12">
+                <label for="ignore-suffixes" class="form-label">
+                  Ignore File Suffixes (comma-separated):
+                </label>
                 <div class="input-group">
                   <textarea
                     class="form-control"
@@ -237,10 +286,10 @@
 
             <div class="row g-3 mt-3">
               <!-- Ignore Folders -->
-              <div class="col-md-12">
-                <label for="ignore-folders" class="form-label"
-                  >Ignore Folders (comma-separated):</label
-                >
+              <div class="col-12">
+                <label for="ignore-folders" class="form-label">
+                  Ignore Folders (comma-separated):
+                </label>
                 <div class="input-group">
                   <textarea
                     class="form-control"
@@ -275,22 +324,23 @@
               Note: Files over 500KB are automatically ignored.
             </div>
 
-            <!-- Drag-and-Drop Area -->
+            <!-- 4. Updated Drag-and-Drop Area with Click Functionality -->
             <div
               id="drop-zone"
               class="border border-dashed rounded p-4 text-center mt-3"
+              onclick="document.getElementById('folder-input').click();"
             >
-              <p class="mb-0">Drag and drop files or folders here</p>
+              <p class="mb-0">Tap to select files or folders</p>
               <p class="text-muted">
-                (or continue using the file selector above)
+                (or use the file selector above)
               </p>
             </div>
 
             <!-- Selected files list -->
             <ul id="file-list" class="list-group mt-3"></ul>
-            <!-- Process Folder Button -->
+            <!-- 6. Updated Process Folder Button for Responsiveness -->
             <div class="d-flex justify-content-end mt-3">
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary w-100 w-md-auto">
                 <i class="bi bi-gear-fill me-1"></i> Process Folder
               </button>
             </div>
@@ -300,8 +350,9 @@
       <!-- Loading Spinner -->
       <div id="loading-spinner" class="text-center mt-3" style="display: none">
         <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+          <span class="visually-hidden">Processing...</span>
         </div>
+        <p>Processing your files, please wait...</p>
       </div>
       <!-- Results Section -->
       <div class="card mt-4">
@@ -495,12 +546,15 @@
           const filePath =
             file.fullPath || file.webkitRelativePath || file.name;
 
+          // 7. Updated File List Item Structure
           li.innerHTML = `
             <span class="bi ${getFileIcon(file.name)}"></span>
-            <span class="file-name">${filePath}</span>
-            <span class="file-size text-muted">${formatFileSize(
-              file.size
-            )}</span>
+            <div class="flex-grow-1 ms-2">
+              <span class="file-name">${filePath}</span><br />
+              <span class="file-size text-muted">${formatFileSize(
+                file.size
+              )}</span>
+            </div>
             <button class="btn btn-sm btn-danger" onclick="removeFile(${index})">
               <i class="bi bi-x-lg"></i>
             </button>
@@ -508,6 +562,14 @@
 
           fileList.appendChild(li);
         });
+
+        // 2. Display File Count and Total Size
+        const fileCount = selectedFiles.length;
+        const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+        const summary = document.createElement("div");
+        summary.className = "mt-2";
+        summary.innerHTML = `<strong>Total Files:</strong> ${fileCount} | <strong>Total Size:</strong> ${formatFileSize(totalSize)}`;
+        fileList.appendChild(summary);
       }
 
       function removeFile(index) {
@@ -516,21 +578,29 @@
       }
 
       function clearSelection() {
-        selectedFiles = [];
-        displaySelectedFiles();
-        document.getElementById("folder-input").value = "";
-        $("#output").text("");
-        $("#content").text("");
-        $("#token-count").text("0");
+        if (confirm("Are you sure you want to clear all selected files and reset the form?")) {
+          selectedFiles = [];
+          displaySelectedFiles();
+          document.getElementById("folder-input").value = "";
+          $("#output").text("");
+          $("#content").text("");
+          $("#token-count").text("0");
+        }
       }
 
       function resetIgnoreSuffixes() {
-        document.getElementById("ignore-suffixes").value =
-          defaultIgnoreSuffixes;
+        if (confirm("Are you sure you want to reset ignore suffixes to default?")) {
+          document.getElementById("ignore-suffixes").value =
+            defaultIgnoreSuffixes;
+          filterSelectedFiles();
+        }
       }
 
       function resetIgnoreFolders() {
-        document.getElementById("ignore-folders").value = defaultIgnoreFolders;
+        if (confirm("Are you sure you want to reset ignore folders to default?")) {
+          document.getElementById("ignore-folders").value = defaultIgnoreFolders;
+          filterSelectedFiles();
+        }
       }
 
       $(document).ready(function () {
@@ -557,20 +627,21 @@
           $("#content").text("");
           $("#token-count").text("0");
 
+          $("#loading-spinner").show(); // Show spinner
+
           $.ajax({
             url: "/",
             type: "POST",
             data: formData,
-            beforeSend: function () {
-              $("#loading-spinner").show();
-            },
             complete: function () {
-              $("#loading-spinner").hide();
+              $("#loading-spinner").hide(); // Hide spinner
             },
             success: function (data) {
               $("#output").text(data.output_messages);
               $("#content").text(data.file_contents);
               $("#token-count").text(data.token_count);
+              // 8. Add fade-in effect to results
+              $("#output, #content, #token-count").addClass("fade-in");
             },
             error: function () {
               $("#output").text("An error occurred during processing.");
