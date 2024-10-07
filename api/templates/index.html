@@ -67,10 +67,12 @@
         white-space: pre-wrap; /* Preserve line breaks and whitespace */
       }
       #output {
-        height: 200px;
+        min-height: 1.5em;
+        max-height: 400px;
       }
       #content {
-        height: 300px;
+        min-height: 6em;
+        max-height: 400px;
       }
       #file-list .list-group-item {
         border: none;
@@ -121,6 +123,21 @@
         align-items: center;
         gap: 10px;
         padding: 5px;
+      }
+        /* Fixed height and scroll for Ignore Lists Textareas */
+      #ignore-suffixes,
+      #ignore-folders {
+        height: 20px; 
+        overflow-y: auto;
+        resize: vertical;
+      }
+
+      /* Adjust height for smaller screens */
+      @media (max-width: 576px) {
+        #ignore-suffixes,
+        #ignore-folders {
+          height: 20px;
+        }
       }
       .file-name {
         overflow: hidden;
@@ -260,10 +277,9 @@
                     class="form-control"
                     id="ignore-suffixes"
                     name="ignore_suffixes"
-                    rows="4"
-                  >
-.env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class</textarea
-                  >
+                    rows="1"
+                    aria-describedby="ignoreSuffixesHelp"
+                  >.env,.log,.gitignore,.json,.npmrc,.prettierrc,.eslintrc,.babelrc,.pyc,.pyo,.pyd,.class</textarea>
                   <button
                     type="button"
                     class="btn btn-outline-secondary"
@@ -282,9 +298,7 @@
                   </button>
                 </div>
               </div>
-            </div>
 
-            <div class="row g-3 mt-3">
               <!-- Ignore Folders -->
               <div class="col-12">
                 <label for="ignore-folders" class="form-label">
@@ -295,10 +309,9 @@
                     class="form-control"
                     id="ignore-folders"
                     name="ignore_folders"
-                    rows="4"
-                  >
-.git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/</textarea
-                  >
+                    rows="1"
+                    aria-describedby="ignoreFoldersHelp"
+                  >.git/,.svn/,.vscode/,.idea/,node_modules/,venv/,.venv/,build/,dist/,out/,.next/,coverage/</textarea>
                   <button
                     type="button"
                     class="btn btn-outline-secondary"
@@ -317,6 +330,8 @@
                   </button>
                 </div>
               </div>
+
+
             </div>
 
             <!-- Size Limit Note -->
@@ -324,7 +339,7 @@
               Note: Files over 500KB are automatically ignored.
             </div>
 
-            <!-- 4. Updated Drag-and-Drop Area with Click Functionality -->
+            <!-- Updated Drag-and-Drop Area with Click Functionality -->
             <div
               id="drop-zone"
               class="border border-dashed rounded p-4 text-center mt-3"
@@ -360,7 +375,8 @@
           <h3>Estimated Token Count: <span id="token-count">0</span></h3>
           <hr />
           <h4>Output Messages:</h4>
-          <div id="output" class="mb-3"></div>
+          <div id="output" class="mb-3" aria-live="polite" aria-atomic="true"></div>
+          
           <!-- Modified File Contents Header with Download Button -->
           <h4 class="d-flex justify-content-between align-items-center mt-4">
             <span>File Contents:</span>
