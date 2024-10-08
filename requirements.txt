@@ -2,3 +2,4 @@ flask
 tiktoken
 werkzeug
 python-docx
+PyPDF2

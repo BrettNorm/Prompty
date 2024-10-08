@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 import tiktoken
 import os
 import docx  # Import the python-docx library
+import PyPDF2
 
 app = Flask(__name__)
 
@@ -34,6 +35,7 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
     MAX_TOTAL_SIZE = 10 * 1024 * 1024
     total_content = []
     output_messages = []
+    processed_files = set()
 
     # Calculate the total size of all uploaded files
     total_size = 0
@@ -52,8 +54,7 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
     supported_extensions = {
         # Existing extensions...
         '.docx',  # Add .docx support
-
-        # (Rest of the supported extensions)
+        '.pdf', # Add .pdf support
         '.py', '.pyw', '.pyx', '.pxd', '.pxi',  # Python
         '.js', '.jsx', '.mjs', '.cjs',  # JavaScript
         '.ts', '.tsx',  # TypeScript
@@ -122,45 +123,67 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
         output_messages.append(f"Model '{model_name}' not recognized. Using default encoding.\n")
         encoding = tiktoken.get_encoding('cl100k_base')
 
-    for file in uploaded_files:
-        filename = file.filename.lower()
-        file_extension = os.path.splitext(filename)[1]
-        
-        # Check if the file type is supported
-        if file_extension not in supported_extensions and not any(filename.endswith(suffix) for suffix in supported_extensions):
-            output_messages.append(f"Skipping unsupported file type: {filename}\n")
-            continue
+        for file in uploaded_files:
+            # Use the full path or unique identifier as the key
+            file_path = file.filename.lower()  # Ensure consistent casing
+            if file_path in processed_files:
+                output_messages.append(f"Skipping duplicate file: {file_path}\n")
+                continue  # Skip processing duplicates
 
-        # Check the file size before reading
-        file.seek(0, os.SEEK_END)  # Move to the end of the file
-        size = file.tell()
-        file.seek(0)  # Reset to the beginning of the file
-        if size > file_size_limit:
-            output_messages.append(f"Skipping file (too large): {filename}\n")
-            continue
+            file_extension = os.path.splitext(file_path)[1]
 
-        try:
-            content_text = f"\n\n=== FILE: {filename} ===\n"
-            if file_extension == '.docx':
-                # Handle .docx files
-                doc = docx.Document(file)
-                file_data = '\n'.join([para.text for para in doc.paragraphs])
-            else:
-                # Handle other text-based files
-                file_data = file.read().decode('utf-8', errors='ignore')
-            total_content.append(content_text + file_data)
-        except Exception as e:
-            output_messages.append(f"Error reading {filename}: {e}\n")
+            # Check if the file type is supported
+            if file_extension not in supported_extensions and not any(file_path.endswith(suffix) for suffix in supported_extensions):
+                output_messages.append(f"Skipping unsupported file type: {file_path}\n")
+                continue
 
-    output_messages.append("Finished processing files.\n")
-    combined_text = ''.join(total_content)
-    token_count = len(encoding.encode(combined_text))
+            # Check the file size before reading
+            file.seek(0, os.SEEK_END)  # Move to the end of the file
+            size = file.tell()
+            file.seek(0)  # Reset to the beginning of the file
+            if size > file_size_limit:
+                output_messages.append(f"Skipping file (too large): {file_path}\n")
+                continue
 
-    return {
-        'output_messages': ''.join(output_messages),
-        'file_contents': combined_text,
-        'token_count': token_count
-    }
+            # Mark this file as processed
+            processed_files.add(file_path)
+
+            try:
+                content_text = f"\n\n=== FILE: {file_path} ===\n"
+                if file_extension == '.docx':
+                    # Handle .docx files
+                    doc = docx.Document(file)
+                    file_data = '\n'.join([para.text for para in doc.paragraphs])
+
+                elif file_extension == '.pdf':
+                    # Handle .pdf files
+                    reader = PyPDF2.PdfReader(file)
+                    file_data = ''
+                    for page_num in range(len(reader.pages)):
+                        page = reader.pages[page_num]
+                        text = page.extract_text()
+                        if text:
+                            file_data += text
+                        else:
+                            output_messages.append(f"No text found on page {page_num + 1} of {file_path}\n")
+
+                else:
+                    # Handle other text-based files
+                    file_data = file.read().decode('utf-8', errors='ignore')
+
+                total_content.append(content_text + file_data)
+            except Exception as e:
+                output_messages.append(f"Error reading {file_path}: {e}\n")
+
+        output_messages.append("Finished processing files.\n")
+        combined_text = ''.join(total_content)
+        token_count = len(encoding.encode(combined_text))
+
+        return {
+            'output_messages': ''.join(output_messages),
+            'file_contents': combined_text,
+            'token_count': token_count
+        }
 
 if __name__ == '__main__':
     app.run()

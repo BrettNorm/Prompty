@@ -250,7 +250,11 @@
                     webkitdirectory
                     directory
                     multiple
-                    accept=".py,.pyw,.pyx,.pxd,.pxi,.js,.jsx,.mjs,.cjs,.ts,.tsx,.html,.htm,.xhtml,.css,.scss,.sass,.less,.xml,.xsl,.xslt,.svg,.json,.jsonl,.yaml,.yml,.md,.markdown,.tex,.ltx,.r,.Rmd,.rb,.rake,.gemspec,.php,.phtml,.php3,.php4,.php5,.phps,.java,.jsp,.c,.cpp,.cxx,.h,.hpp,.cs,.go,.swift,.kt,.kts,.scala,.sc,.rs,.pl,.pm,.t,.lua,.sh,.bash,.zsh,.fish,.ps1,.psm1,.psd1,.sql,.vue,.ng.html,.hbs,.handlebars,.ejs,.pug,.ini,.toml,.properties,.env,Dockerfile,docker-compose.yml,.gitignore,.gitattributes,.editorconfig,.csv,.tsv,.txt,.rst,.adoc,.asciidoc,.log,.license,.copying,.readme,.changelog,.bat,.cmd,.vbs"
+                    accept=".py,.pyw,.pyx,.pxd,.pxi,.js,.jsx,.mjs,.cjs,.ts,.tsx,.html,.htm,.xhtml,.css,.scss,.sass,.less,.xml,.xsl,.xslt,.svg,.json,.jsonl,
+                    .yaml,.yml,.md,.markdown,.tex,.ltx,.r,.Rmd,.rb,.rake,.gemspec,.php,.phtml,.php3,.php4,.php5,.phps,.java,.jsp,.c,.cpp,.cxx,.h,.hpp,.cs,
+                    .go,.swift,.kt,.kts,.scala,.sc,.rs,.pl,.pm,.t,.lua,.sh,.bash,.zsh,.fish,.ps1,.psm1,.psd1,.sql,.vue,.ng.html,.hbs,.handlebars,.ejs,.pug,
+                    .ini,.toml,.properties,.env,Dockerfile,docker-compose.yml,.gitignore,.gitattributes,.editorconfig,.csv,.tsv,.txt,.rst,.adoc,.asciidoc,
+                    .log,.license,.copying,.readme,.changelog,.bat,.cmd,.vbs,.pdf"
                     onchange="handleFileSelect(event)"
                   />
                   <button
@@ -405,41 +409,51 @@
 
     <script>
       var selectedFiles = [];
+      var selectedFilePaths = new Set();
       const defaultIgnoreSuffixes =
         ".env, .log, .gitignore, .json, .npmrc, .prettierrc, .eslintrc, .babelrc, .pyc, .pyo, .pyd, .class";
       const defaultIgnoreFolders =
         ".git/, .svn/, .vscode/, .idea/, node_modules/, venv/, .venv/, build/, dist/, out/, .next/, coverage/";
 
-      function handleFileSelect(event) {
-        const ignoreSuffixes = document
-          .getElementById("ignore-suffixes")
-          .value.split(",")
-          .map((s) => s.trim().toLowerCase());
-        const ignoreFolders = document
-          .getElementById("ignore-folders")
-          .value.split(",")
-          .map((s) => s.trim().toLowerCase());
+        function handleFileSelect(event) {
+          const ignoreSuffixes = document
+            .getElementById("ignore-suffixes")
+            .value.split(",")
+            .map((s) => s.trim().toLowerCase());
+          const ignoreFolders = document
+            .getElementById("ignore-folders")
+            .value.split(",")
+            .map((s) => s.trim().toLowerCase());
 
-        const newFiles = Array.from(event.target.files).filter((file) => {
-          const lowerPath = file.webkitRelativePath.toLowerCase();
-          const fileName = file.name.toLowerCase();
+          const newFiles = Array.from(event.target.files).filter((file) => {
+            const lowerPath = (file.fullPath || file.webkitRelativePath || file.name).toLowerCase();
+            const fileName = file.name.toLowerCase();
 
-          // Check if the file is in any ignored folder
-          if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
-            return false;
-          }
+            // Check if the file is in any ignored folder
+            if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
+              return false;
+            }
 
-          // Check if the file has any ignored suffix
-          if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
-            return false;
-          }
+            // Check if the file has any ignored suffix
+            if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
+              return false;
+            }
 
-          return true;
-        });
+            // Check if the file is already in selectedFiles
+            if (selectedFilePaths.has(lowerPath)) {
+              return false; // Skip duplicates
+            }
 
-        selectedFiles = selectedFiles.concat(newFiles);
-        displaySelectedFiles();
-      }
+            // Add to the set of selected file paths
+            selectedFilePaths.add(lowerPath);
+
+            return true;
+          });
+
+          selectedFiles = selectedFiles.concat(newFiles);
+          displaySelectedFiles();
+        }
+
       // Drag-and-Drop Functionality
       var dropZone = document.getElementById("drop-zone");
 
@@ -480,11 +494,14 @@
           displaySelectedFiles();
         });
       }
+
+
       function traverseFileTree(item, path = "") {
         return new Promise((resolve) => {
           if (item.isFile) {
             item.file((file) => {
-              file.fullPath = path + file.name;
+              const filePath = (path + file.name).toLowerCase();
+
               const ignoreSuffixes = document
                 .getElementById("ignore-suffixes")
                 .value.split(",")
@@ -495,7 +512,7 @@
                 .map((s) => s.trim().toLowerCase());
 
               const fileName = file.name.toLowerCase();
-              const lowerPath = file.fullPath.toLowerCase();
+              const lowerPath = filePath;
 
               // Check if the file is in any ignored folder
               if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
@@ -509,23 +526,45 @@
                 return;
               }
 
+              // Check if the file is already in selectedFiles
+              if (selectedFilePaths.has(lowerPath)) {
+                resolve(); // Skip duplicates
+                return;
+              }
+
+              // Add to the set of selected file paths
+              selectedFilePaths.add(lowerPath);
+
+              // Update the file's full path
+              file.fullPath = filePath;
+
               selectedFiles.push(file);
               resolve();
             });
           } else if (item.isDirectory) {
             const dirReader = item.createReader();
-            dirReader.readEntries((entries) => {
-              const promises = [];
-              for (let i = 0; i < entries.length; i++) {
-                promises.push(
-                  traverseFileTree(entries[i], path + item.name + "/")
-                );
-              }
-              Promise.all(promises).then(resolve);
-            });
+            let entries = [];
+
+            // Read entries until empty array is returned
+            function readEntries() {
+              dirReader.readEntries((result) => {
+                if (!result.length) {
+                  // All entries have been read
+                  Promise.all(entries).then(resolve);
+                } else {
+                  entries = entries.concat(
+                    result.map((entry) => traverseFileTree(entry, path + item.name + "/"))
+                  );
+                  readEntries(); // Recursively read until no more entries
+                }
+              });
+            }
+
+            readEntries();
           }
         });
       }
+
 
       function getFileIcon(fileName) {
         const extension = fileName.split(".").pop().toLowerCase();
@@ -595,6 +634,7 @@
       function clearSelection() {
         if (confirm("Are you sure you want to clear all selected files and reset the form?")) {
           selectedFiles = [];
+          selectedFilePaths.clear(); // Clear the set of file paths
           displaySelectedFiles();
           document.getElementById("folder-input").value = "";
           $("#output").text("");
@@ -602,6 +642,47 @@
           $("#token-count").text("0");
         }
       }
+
+      function filterSelectedFiles() {
+        const ignoreSuffixes = document
+          .getElementById("ignore-suffixes")
+          .value.split(",")
+          .map((s) => s.trim().toLowerCase());
+        const ignoreFolders = document
+          .getElementById("ignore-folders")
+          .value.split(",")
+          .map((s) => s.trim().toLowerCase());
+
+        // Clear the selectedFilePaths set
+        selectedFilePaths.clear();
+
+        selectedFiles = selectedFiles.filter((file) => {
+          const lowerPath = (
+            file.fullPath ||
+            file.webkitRelativePath ||
+            file.name
+          ).toLowerCase();
+          const fileName = file.name.toLowerCase();
+
+          // Check if the file is in any ignored folder
+          if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
+            return false;
+          }
+
+          // Check if the file has any ignored suffix
+          if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
+            return false;
+          }
+
+          // Add to the set of selected file paths
+          selectedFilePaths.add(lowerPath);
+
+          return true;
+        });
+
+        displaySelectedFiles();
+      }
+
 
       function resetIgnoreSuffixes() {
         if (confirm("Are you sure you want to reset ignore suffixes to default?")) {
@@ -655,7 +736,6 @@
               $("#output").text(data.output_messages);
               $("#content").text(data.file_contents);
               $("#token-count").text(data.token_count);
-              // 8. Add fade-in effect to results
               $("#output, #content, #token-count").addClass("fade-in");
             },
             error: function () {
@@ -710,39 +790,8 @@
         filterSelectedFiles();
       }
 
-      function filterSelectedFiles() {
-        const ignoreSuffixes = document
-          .getElementById("ignore-suffixes")
-          .value.split(",")
-          .map((s) => s.trim().toLowerCase());
-        const ignoreFolders = document
-          .getElementById("ignore-folders")
-          .value.split(",")
-          .map((s) => s.trim().toLowerCase());
 
-        selectedFiles = selectedFiles.filter((file) => {
-          const lowerPath = (
-            file.fullPath ||
-            file.webkitRelativePath ||
-            file.name
-          ).toLowerCase();
-          const fileName = file.name.toLowerCase();
 
-          // Check if the file is in any ignored folder
-          if (ignoreFolders.some((folder) => lowerPath.includes(folder))) {
-            return false;
-          }
-
-          // Check if the file has any ignored suffix
-          if (ignoreSuffixes.some((suffix) => fileName.endsWith(suffix))) {
-            return false;
-          }
-
-          return true;
-        });
-
-        displaySelectedFiles();
-      }
     </script>
   </body>
 </html>
