@@ -152,10 +152,6 @@ You can customize the following settings in the web interface:
 
 If you're interested in contributing to Prompty, please visit our GitHub repository and submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgements
 
 - [Flask](https://flask.palletsprojects.com/) for the web framework
