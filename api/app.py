@@ -10,18 +10,19 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        model_name = request.form.get('model')
+        model_name = 'gpt-4'
         ignore_suffixes = request.form.get('ignore_suffixes', '')
         ignore_folders = request.form.get('ignore_folders', '')
         files = request.files.getlist('files')
+
 
         delimiter = request.form.get('delimiter', '=== FILE: {filename} ===')
 
         if '{filename}' not in delimiter:
             return jsonify({'error': "Delimiter must include '{filename}' placeholder."}), 400
 
-        if not files or not model_name:
-            return jsonify({'error': 'Missing files or model selection'}), 400
+        if not files:
+            return jsonify({'error': 'Missing files'}), 400
 
 
         result = process_files(files, model_name, ignore_suffixes, ignore_folders, delimiter)

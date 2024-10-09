@@ -207,67 +207,43 @@
         <div class="card-body">
           <form id="upload-form" method="post" enctype="multipart/form-data">
             <div class="row g-3">
-              <!-- AI Model Selection -->
-              <div class="col-12 col-md-6">
-                <label for="model-select" class="form-label">
-                  Select AI Model:
+
+            <!-- Delimiter Selection -->
+            <div class="row g-3 mt-2">
+              <div class="col-12">
+                <label for="delimiter-select" class="form-label">
+                  Select File Delimiter:
                 </label>
                 <div class="input-group">
                   <span class="input-group-text">
-                    <i class="bi bi-robot"></i>
+                    <i class="bi bi-textarea-t"></i>
                   </span>
-                  <select
-                    class="form-select"
-                    id="model-select"
-                    name="model"
-                    aria-describedby="modelHelp"
-                  >
-                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-                    <option value="gpt-4">gpt-4</option>
-                    <option value="text-davinci-003">text-davinci-003</option>
-                    <option value="text-curie-001">text-curie-001</option>
-                    <option value="code-davinci-002">code-davinci-002</option>
+                  <select class="form-select" id="delimiter-select" name="delimiter">
+                    <option value="default" selected>=== FILE: {filename} ===</option>
+                    <option value="markdown">## {filename}</option>
+                    <option value="simple">-- {filename} --</option>
+                    <option value="custom">Custom...</option>
                   </select>
                 </div>
-                <div id="modelHelp" class="form-text">
-                  Choose the AI model for token count estimation.
-                </div>
-              </div>
-              <!-- Folder Selection and Start Over Button -->
-              <div class="col-12 col-md-6">
-                <label for="folder-input" class="form-label">
-                  Select Folder:
-                </label>
-                <div class="input-group">
-                  <span class="input-group-text">
-                    <i class="bi bi-folder2-open"></i>
-                  </span>
+                <!-- Custom Delimiter Input -->
+                <div id="custom-delimiter-input" style="display: none;" class="mt-2">
+                  <label for="custom-delimiter" class="form-label">
+                    Enter Custom Delimiter:
+                  </label>
                   <input
-                    type="file"
+                    type="text"
                     class="form-control"
-                    id="folder-input"
-                    name="files"
-                    webkitdirectory
-                    directory
-                    multiple
-                    accept=".py,.pyw,.pyx,.pxd,.pxi,.js,.jsx,.mjs,.cjs,.ts,.tsx,.html,.htm,.xhtml,.css,.scss,.sass,.less,.xml,.xsl,.xslt,.svg,.json,.jsonl,
-                    .yaml,.yml,.md,.markdown,.tex,.ltx,.r,.Rmd,.rb,.rake,.gemspec,.php,.phtml,.php3,.php4,.php5,.phps,.java,.jsp,.c,.cpp,.cxx,.h,.hpp,.cs,
-                    .go,.swift,.kt,.kts,.scala,.sc,.rs,.pl,.pm,.t,.lua,.sh,.bash,.zsh,.fish,.ps1,.psm1,.psd1,.sql,.vue,.ng.html,.hbs,.handlebars,.ejs,.pug,
-                    .ini,.toml,.properties,.env,Dockerfile,docker-compose.yml,.gitignore,.gitattributes,.editorconfig,.csv,.tsv,.txt,.rst,.adoc,.asciidoc,
-                    .log,.license,.copying,.readme,.changelog,.bat,.cmd,.vbs,.pdf"
-                    onchange="handleFileSelect(event)"
+                    id="custom-delimiter"
+                    name="custom_delimiter"
+                    placeholder="Use {filename} where you want the file name to appear"
                   />
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    onclick="clearSelection()"
-                    title="Start Over"
-                  >
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                  </button>
+                </div>
+                <div id="delimiterHelp" class="form-text">
+                  Use <code>{filename}</code> where you want the file name to appear.
                 </div>
               </div>
             </div>
+
             <!-- Ignore Lists Textareas with Individual Reset and Update Buttons -->
             <div class="row g-3 mt-3">
              <!-- Ignore File Suffixes -->
@@ -333,14 +309,6 @@
                   </button>
                 </div>
               </div>
-
-
-
-            </div>
-
-            <!-- Size Limit Note -->
-            <div class="alert alert-info mt-3" role="alert">
-              Note: Files over 500KB are automatically ignored.
             </div>
 
             <!-- Drag-and-Drop Area with Click Functionality -->
@@ -351,73 +319,64 @@
             >
               <p class="mb-0">Drag and drop files or folders</p>
               <p class="text-muted">
-                (or use the file selector above)
+                (or click to select a folder)
               </p>
             </div>
+            <!-- Size Limit Note -->
+              <p class="text-muted mt-2" style="font-size: 0.9rem;">
+                <i class="bi bi-info-circle"></i> Files over 500KB are automatically ignored.
+              </p>
+
 
             <!-- Selected files list -->
             <ul id="file-list" class="list-group mt-3"></ul>
-            <!-- Process Files Button-->
-            <div class="d-flex justify-content-end mt-3">
-              <button type="submit" class="btn btn-primary w-100 w-md-auto">
-                <i class="bi bi-gear-fill me-1"></i> Process Folder
+
+            <!-- Process Files and Clear Files Buttons -->
+            <div class="d-flex justify-content-end align-items-center flex-wrap mt-0">
+              <button
+                type="button"
+                class="btn btn-outline-secondary me-2"
+                onclick="clearSelection()"
+                title="Clear Files"
+              >
+                <i class="bi bi-arrow-counterclockwise"></i> Clear Files
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-gear-fill me-1"></i> Process Files
               </button>
             </div>
 
-            <!-- Delimiter Selection -->
-            <div class="row g-3 mt-3">
-              <div class="col-12">
-                <label for="delimiter-select" class="form-label">
-                  Select File Delimiter:
-                </label>
-                <div class="input-group">
-                  <span class="input-group-text">
-                    <i class="bi bi-textarea-t"></i>
-                  </span>
-                  <select class="form-select" id="delimiter-select" name="delimiter">
-                    <option value="default" selected>=== FILE: {filename} ===</option>
-                    <option value="markdown">## {filename}</option>
-                    <option value="simple">-- {filename} --</option>
-                    <option value="custom">Custom...</option>
-                  </select>
-                </div>
-                <!-- Custom Delimiter Input -->
-                <div id="custom-delimiter-input" style="display: none;" class="mt-2">
-                  <label for="custom-delimiter" class="form-label">
-                    Enter Custom Delimiter:
-                  </label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="custom-delimiter"
-                    name="custom_delimiter"
-                    placeholder="Use {filename} where you want the file name to appear"
-                  />
-                </div>
-                <div id="delimiterHelp" class="form-text">
-                  Use <code>{filename}</code> where you want the file name to appear.
-                </div>
-              </div>
-            </div>
+
+            <input
+              type="file"
+              id="folder-input"
+              name="files"
+              webkitdirectory
+              directory
+              multiple
+              accept=".py, .js, .html, .css, .md, .txt, .docx, .pdf, etc."
+              onchange="handleFileSelect(event)"
+              style="display: none;"
+            />
 
           </form>
         </div>
       </div>
-      <!-- Loading Spinner -->
-      <div id="loading-spinner" class="text-center mt-3" style="display: none">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Processing...</span>
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="text-center mt-3" style="display: none">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Processing...</span>
+          </div>
+          <p>Processing your files, please wait...</p>
         </div>
-        <p>Processing your files, please wait...</p>
-      </div>
-      <!-- Results Section -->
-      <div class="card mt-4">
-        <div class="card-body">
-          <h3>Estimated Token Count: <span id="token-count">0</span></h3>
-          <hr />
-          <h4>Output Messages:</h4>
-          <div id="output" class="mb-3" aria-live="polite" aria-atomic="true"></div>
-          
+        <!-- Results Section -->
+        <div class="card mt-4">
+          <div class="card-body">
+            <h3>Estimated Token Count (based on GPT-4): <span id="token-count">0</span></h3>
+            <hr />
+            <h4>Output Messages:</h4>
+            <div id="output" class="mb-3" aria-live="polite" aria-atomic="true"></div>
+            
           <!-- Modified File Contents Header with Download Button -->
           <h4 class="d-flex justify-content-between align-items-center mt-4">
             <span>File Contents:</span>
@@ -429,7 +388,7 @@
               >
                 <i class="bi bi-clipboard"></i> Copy to Clipboard
               </button>
-              <!-- New Download Button -->
+              <!-- Download Button -->
               <button
                 type="button"
                 class="btn btn-outline-secondary btn-sm ms-2"
@@ -744,7 +703,7 @@
             return;
           }
           var formData = new FormData();
-          formData.append("model", $("#model-select").val());
+          formData.append("model", "gpt-4");
           formData.append("ignore_suffixes", $("#ignore-suffixes").val());
           formData.append("ignore_folders", $("#ignore-folders").val());
 
@@ -767,7 +726,7 @@
           }
           formData.append("delimiter", delimiter);
 
-          
+
           selectedFiles.forEach(function (file) {
             formData.append(
               "files",
