@@ -363,6 +363,43 @@
                 <i class="bi bi-gear-fill me-1"></i> Process Folder
               </button>
             </div>
+
+            <!-- Delimiter Selection -->
+            <div class="row g-3 mt-3">
+              <div class="col-12">
+                <label for="delimiter-select" class="form-label">
+                  Select File Delimiter:
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-textarea-t"></i>
+                  </span>
+                  <select class="form-select" id="delimiter-select" name="delimiter">
+                    <option value="default" selected>=== FILE: {filename} ===</option>
+                    <option value="markdown">## {filename}</option>
+                    <option value="simple">-- {filename} --</option>
+                    <option value="custom">Custom...</option>
+                  </select>
+                </div>
+                <!-- Custom Delimiter Input -->
+                <div id="custom-delimiter-input" style="display: none;" class="mt-2">
+                  <label for="custom-delimiter" class="form-label">
+                    Enter Custom Delimiter:
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="custom-delimiter"
+                    name="custom_delimiter"
+                    placeholder="Use {filename} where you want the file name to appear"
+                  />
+                </div>
+                <div id="delimiterHelp" class="form-text">
+                  Use <code>{filename}</code> where you want the file name to appear.
+                </div>
+              </div>
+            </div>
+
           </form>
         </div>
       </div>
@@ -711,6 +748,26 @@
           formData.append("ignore_suffixes", $("#ignore-suffixes").val());
           formData.append("ignore_folders", $("#ignore-folders").val());
 
+
+          // Get the selected delimiter
+          var delimiterOption = $("#delimiter-select").val();
+          var delimiter = "";
+          if (delimiterOption === "custom") {
+            delimiter = $("#custom-delimiter").val();
+            if (!delimiter.includes("{filename}")) {
+              alert("Please include '{filename}' in your custom delimiter.");
+              return;
+            }
+          } else if (delimiterOption === "default") {
+            delimiter = "=== FILE: {filename} ===";
+          } else if (delimiterOption === "markdown") {
+            delimiter = "## {filename}";
+          } else if (delimiterOption === "simple") {
+            delimiter = "-- {filename} --";
+          }
+          formData.append("delimiter", delimiter);
+
+          
           selectedFiles.forEach(function (file) {
             formData.append(
               "files",
@@ -790,6 +847,15 @@
         filterSelectedFiles();
       }
 
+      // Show or hide custom delimiter input
+      document.getElementById("delimiter-select").addEventListener("change", function () {
+        const customDelimiterDiv = document.getElementById("custom-delimiter-input");
+        if (this.value === "custom") {
+          customDelimiterDiv.style.display = "block";
+        } else {
+          customDelimiterDiv.style.display = "none";
+        }
+      });
 
 
     </script>

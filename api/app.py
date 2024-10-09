@@ -15,10 +15,16 @@ def index():
         ignore_folders = request.form.get('ignore_folders', '')
         files = request.files.getlist('files')
 
+        delimiter = request.form.get('delimiter', '=== FILE: {filename} ===')
+
+        if '{filename}' not in delimiter:
+            return jsonify({'error': "Delimiter must include '{filename}' placeholder."}), 400
+
         if not files or not model_name:
             return jsonify({'error': 'Missing files or model selection'}), 400
 
-        result = process_files(files, model_name, ignore_suffixes, ignore_folders)
+
+        result = process_files(files, model_name, ignore_suffixes, ignore_folders, delimiter)
 
         if result is None:
             # This should no longer occur, but added as a safety net
@@ -31,7 +37,7 @@ def index():
     else:
         return render_template('index.html')
 
-def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
+def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders, delimiter):
     import os
     import re
 
@@ -153,7 +159,10 @@ def process_files(uploaded_files, model_name, ignore_suffixes, ignore_folders):
         processed_files.add(file_path)
 
         try:
-            content_text = f"\n\n=== FILE: {file_path} ===\n"
+            # Replace {filename} with the actual filename
+            formatted_delimiter = delimiter.replace('{filename}', file_path)
+            content_text = f"\n\n{formatted_delimiter}\n"
+
             if file_extension == '.docx':
                 # Handle .docx files
                 doc = docx.Document(file)
